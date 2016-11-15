@@ -113,17 +113,35 @@ describe('Page model', function () {
         }).then(function(page){
           page.findSimilar()
           .then(function(similiarPages){
-            expect(similiarPages).to.have.lengthOf(3);
-          })
+            //expect(similiarPages).to.have.lengthOf(3);
+            similiarPages.forEach(function(page){
+                for(var i = 0 ; i < page.tags.length; i++){
+                  expect(newPage.tags.contains(page.tags[i])).to.equal(true)
+                }
+            })
 
+          })
           done();
         })
-        
       });
+        
+      
 
 
-      it('does not get other pages without any common tags');
-    });
+      xit('does not get other pages without any common tags', function(done){
+        var newPage = Page.create({
+            title: 'hola',
+            content: 'me gusta madrid',
+            tags: ['greeting', 'madrid']
+          }).then(function(page){
+            page.findSimilar()
+            .then(function(similiarPages){
+              expect(similiarPages).to.have.lengthOf(2);
+            })
+
+            done();
+          })
+
   });
 
   describe('Validations', function () {
