@@ -5,6 +5,8 @@ const chai = require('chai');
 const expect = chai.expect;
 var spies = require('chai-spies');
 chai.use(spies);
+chai.should();
+chai.use(require('chai-things'));
 
 describe('Page model', function () {
 
@@ -47,14 +49,14 @@ describe('Page model', function () {
           });
 
     describe('findByTag', function () {
-      it('gets pages with the search tag', function(){
+      it('gets pages with the search tag', function(done){
         console.log(page)
-        // Page.findByTag('foo')
-        //   .then(function(pages){
-        //     expect(pages).to.have.lengthOf(1);
-        //     done();
-        //   })
-          // .catch(done);
+        Page.findByTag('foo')
+          .then(function(pages){
+            expect(pages).to.have.lengthOf(1);
+            done();
+          })
+          .catch(done);
       });
 
       it('does not get pages without the search tag');
@@ -63,8 +65,63 @@ describe('Page model', function () {
 
   describe('Instance methods', function () {
     describe('findSimilar', function () {
-      it('never gets itself');
-      it('gets other pages with any common tags');
+
+      before(function(){
+
+        var firstPage =  Page.create({
+          title: 'hello',
+          content: 'how are you',
+          tags: ['hello', 'greeting']
+        });
+
+        var secondPage =  Page.create({
+          title: 'howdy',
+          content: 'im a cowboy',
+          tags: ['greeting', 'wildwest']
+         });
+
+        var thirdPage =  Page.create({
+          title: 'random',
+          content: 'this is not a greeting',
+          tags: ['bye', 'fool']
+        });
+
+        return Promise.all([
+          firstPage,
+          secondPage,
+          thirdPage
+        ]);
+
+      });
+
+      it('never gets itself', function(done){
+        var newPage = Page.create({
+          title: 'aloha',
+          content: 'hawaii is nice... nodemon',
+          tags: ['greeting', 'hawaii']
+        }).then(function(page){
+          [page.findSimilar()].should.not.include(newPage);
+          done();
+        })
+      });
+
+      it('gets other pages with any common tags', function(done){
+        var newPage = Page.create({
+          title: 'hola',
+          content: 'me gusta madrid',
+          tags: ['greeting', 'madrid']
+        }).then(function(page){
+          page.findSimilar()
+          .then(function(similiarPages){
+            expect(similiarPages).to.have.lengthOf(3);
+          })
+
+          done();
+        })
+        
+      });
+
+
       it('does not get other pages without any common tags');
     });
   });
